@@ -1,0 +1,16 @@
+{
+  "plugin_id":   "chronicle.plugin.anilist",
+  "name":        "AniList",
+  "version":     "1.0.0",
+  "author":      "Chronicle Contributors",
+  "description": "Anime series, season, episode and film metadata from AniList: titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings and artwork. No API key or account required.",
+  "min_chronicle_version": "0.7.0",
+  "entry_type":  "Chronicle.Plugin.AniList.AniListMetadataProvider",
+  "iconUrl":     "https://anilist.co/img/icons/favicon-32x32.png",
+  "brandColorLight": "#02A9FF",
+  "brandColorDark":  "#3DB4F2",
+  "fixMatchHint": "Enter an AniList ID (16498), an AniList URL (https://anilist.co/anime/16498), a MyAnimeList ID prefixed with mal: (mal:16498), or a MyAnimeList URL.",
+  "supported_media_types": ["anime", "anime_movies"],
+  "background_tasks": [],
+  "settings": []
+}

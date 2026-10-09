@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Chronicle.Plugin.AniList</AssemblyName>
+    <RootNamespace>Chronicle.Plugin.AniList</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Chronicle Contributors</Authors>
+    <Description>AniList anime metadata plugin for Chronicle. No API key required.</Description>
+    <!-- The tests project lives below this folder; keep its sources out of the plugin build. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
+    <PackageReference Include="System.Text.Json"          Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Chronicle.Plugins.dll is provided by the host at runtime — do NOT copy to output -->
+    <ProjectReference Include="../Chronicle/src/Chronicle.Plugins/Chronicle.Plugins.csproj"
+                      Private="false"
+                      ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Chronicle.Plugin.AniList.Tests" />
+    <None Update="manifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
