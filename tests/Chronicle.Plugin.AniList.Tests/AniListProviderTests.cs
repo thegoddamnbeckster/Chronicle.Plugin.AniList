@@ -267,6 +267,19 @@ public class AniListProviderTests
     }
 
     [Fact]
+    public async Task AskingForEachEpisodeInTurn_FetchesTheAiringScheduleOnlyOnce()
+    {
+        var fake = Catalogue();
+        var provider = Provider(fake);
+        var ids = new Dictionary<string, string> { ["parent_anilist"] = "show:16498/season:1" };
+
+        for (var e = 1; e <= 5; e++)
+            await provider.SearchAsync(new MediaSearchContext("x", HierarchyLevel: 2, ItemNumber: e, KnownExternalIds: ids));
+
+        Assert.Equal(1, fake.Queries.Count(q => q.Contains("airingSchedule")));
+    }
+
+    [Fact]
     public async Task HealthCheck_IsTrue_WhenAniListAnswers() =>
         Assert.True(await Provider(Catalogue()).HealthCheckAsync());
 

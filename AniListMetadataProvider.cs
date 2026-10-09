@@ -46,6 +46,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
     // A short-lived memory of entries just fetched, so walking a season chain does not fetch the same entry once per
     // question. It holds nothing between app runs and is never authoritative.
     private readonly ConcurrentDictionary<int, (DateTimeOffset At, AniMedia Media)> _recent = new();
+    private readonly ConcurrentDictionary<int, (DateTimeOffset At, Dictionary<int, string> Dates)> _aired = new();
     private static readonly TimeSpan RecentFor = TimeSpan.FromMinutes(10);
     private const int RecentMax = 400;
 
@@ -346,14 +347,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
                 titles.TryAdd(number, (m.Success ? m.Groups[2].Value : s.Title.Trim(), s.Thumbnail));
             }
 
-            var aired = new Dictionary<int, string>();
-            for (var page = 1; page <= 10; page++)
-            {
-                var schedule = await _client!.GetAiringPageAsync(part.Id, page, ct).ConfigureAwait(false);
-                foreach (var node in schedule?.Nodes ?? [])
-                    aired.TryAdd(node.Episode, DateTimeOffset.FromUnixTimeSeconds(node.AiringAt).UtcDateTime.ToString("yyyy-MM-dd"));
-                if (schedule?.PageInfo?.HasNextPage != true) break;
-            }
+            var aired = await AiredAsync(part.Id, ct).ConfigureAwait(false);
 
             var count = part.Episodes ?? Math.Max(titles.Count == 0 ? 0 : titles.Keys.Max(), aired.Count == 0 ? 0 : aired.Keys.Max());
             for (var e = 1; e <= count; e++)
@@ -365,6 +359,24 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             offset += count;
         }
         return result;
+    }
+
+    /// <summary>Air dates by episode number for one AniList entry. Remembered briefly: a season's episodes are asked for one
+    /// at a time, and each ask would otherwise fetch the whole schedule again.</summary>
+    private async Task<Dictionary<int, string>> AiredAsync(int mediaId, CancellationToken ct)
+    {
+        if (_aired.TryGetValue(mediaId, out var hit) && DateTimeOffset.UtcNow - hit.At < RecentFor) return hit.Dates;
+        var aired = new Dictionary<int, string>();
+        for (var page = 1; page <= 10; page++)
+        {
+            var schedule = await _client!.GetAiringPageAsync(mediaId, page, ct).ConfigureAwait(false);
+            foreach (var node in schedule?.Nodes ?? [])
+                aired.TryAdd(node.Episode, DateTimeOffset.FromUnixTimeSeconds(node.AiringAt).UtcDateTime.ToString("yyyy-MM-dd"));
+            if (schedule?.PageInfo?.HasNextPage != true) break;
+        }
+        if (_aired.Count >= RecentMax) _aired.Clear();
+        _aired[mediaId] = (DateTimeOffset.UtcNow, aired);
+        return aired;
     }
 
     // ── mapping ───────────────────────────────────────────────────────────────
