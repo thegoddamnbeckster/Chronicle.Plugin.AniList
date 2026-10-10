@@ -30,10 +30,22 @@ internal static class AniListSeasons
     public static bool IsContinuationPart(AniMedia media) =>
         new[] { media.Title?.English, media.Title?.Romaji }.Any(t => !string.IsNullOrWhiteSpace(t) && ContinuationTitle.IsMatch(t));
 
+    private static int? YearOf(AniMedia m) => m.SeasonYear ?? m.StartDate?.Year;
+
+    /// <summary>The TV-like neighbour reached by <paramref name="relation"/>. AniList's links are community-maintained and
+    /// sometimes loose (a 1999 show listing a 2024 special as its "prequel"), so a prequel that started after this entry, or a
+    /// sequel that started before it, is not followed.</summary>
     private static AniMedia? Related(AniMedia media, string relation, bool preferTv = true)
     {
+        var here = YearOf(media);
+        bool InOrder(AniMedia n)
+        {
+            var year = YearOf(n);
+            if (here is null || year is null) return true;
+            return relation == "PREQUEL" ? year <= here : year >= here;
+        }
         var nodes = (media.Relations?.Edges ?? [])
-            .Where(e => e.RelationType == relation && e.Node is { Type: "ANIME" } n && IsTvLike(n.Format))
+            .Where(e => e.RelationType == relation && e.Node is { Type: "ANIME" } n && IsTvLike(n.Format) && InOrder(n))
             .Select(e => e.Node!).ToList();
         return preferTv ? nodes.FirstOrDefault(n => n.Format == "TV") ?? nodes.FirstOrDefault() : nodes.FirstOrDefault();
     }

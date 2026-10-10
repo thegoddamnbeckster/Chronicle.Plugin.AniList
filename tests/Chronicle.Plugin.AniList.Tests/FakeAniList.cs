@@ -90,7 +90,7 @@ internal sealed class FakeAniList : HttpMessageHandler
         },
     };
 
-    private object RelationNode(int id) => new { id, type = "ANIME", format = _entries[id].Format, title = new { romaji = _entries[id].Romaji } };
+    private object RelationNode(int id) => new { id, type = "ANIME", format = _entries[id].Format, title = new { romaji = _entries[id].Romaji }, startDate = new { year = _entries[id].Year } };
 
     private static HttpResponseMessage Ok(object data) => new(HttpStatusCode.OK) { Content = Json(JsonSerializer.Serialize(new { data })) };
 

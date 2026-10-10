@@ -31,11 +31,13 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.anilist";
     public string Name     => "AniList";
-    public string Version  => "1.0.1";
+    public string Version  => "1.0.2";
     public string Author   => "Chronicle Contributors";
 
-    private static readonly string[] ShowFormats  = ["TV", "TV_SHORT", "ONA"];
-    private static readonly string[] MovieFormats = ["MOVIE"];
+    // Many shows and films are filed on AniList as OVAs or specials (a 1988 feature-length OVA, a 22-episode OVA series), so
+    // they are searched too; the title and year decide the match.
+    private static readonly string[] ShowFormats  = ["TV", "TV_SHORT", "ONA", "OVA"];
+    private static readonly string[] MovieFormats = ["MOVIE", "OVA", "SPECIAL"];
 
     private AniListClient? _client;
     private HttpClient?    _ownedHttp;
@@ -143,8 +145,8 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
     {
         // 1. An id we already know: our own, or a MyAnimeList id another plugin stored.
         var known = await ResolveKnownEntryAsync(context.KnownExternalIds, parent: false, ct).ConfigureAwait(false);
-        if (known is not null && (known.Format == "MOVIE") == movie)
-            return [new ScoredCandidate(Map(await ForDisplayAsync(known, movie, ct).ConfigureAwait(false)), 100, "known id") { IdentifierMatch = true }];
+        if (known is not null && (movie ? MovieFormats : ShowFormats).Contains(known.Format ?? ""))
+            return [new ScoredCandidate(Map(await ForDisplayAsync(known, movie, ct).ConfigureAwait(false), movie), 100, "known id") { IdentifierMatch = true }];
 
         // 2. Search by name, then by each alternate title.
         var formats = movie ? MovieFormats : ShowFormats;
@@ -175,7 +177,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             // The best candidate gets the whole record (and is turned into its show's first season); the others are
             // shown from what the search returned.
             var shown = i == 0 ? await ForDisplayAsync(media, movie, ct).ConfigureAwait(false) : media;
-            candidates.Add(new ScoredCandidate(Map(shown), score, i == 0 ? "title search" : "title search (other)"));
+            candidates.Add(new ScoredCandidate(Map(shown, movie), score, i == 0 ? "title search" : "title search (other)"));
         }
         return candidates;
     }
@@ -220,7 +222,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             media = await LoadAsync(parsed.Id, ct).ConfigureAwait(false);
         if (media is null) return Empty(raw);
 
-        if (parsed.Season is null) return Map(media);
+        if (parsed.Season is null) return Map(media, parsed.Movie || media.Format == "MOVIE");
 
         var layout = await AniListSeasons.BuildAsync(media, LoadAsync, ct).ConfigureAwait(false);
         var season = layout.Seasons.FirstOrDefault(s => s.Number == parsed.Season);
@@ -381,9 +383,8 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 
     // ── mapping ───────────────────────────────────────────────────────────────
 
-    private MediaMetadata Map(AniMedia m)
+    private MediaMetadata Map(AniMedia m, bool movie)
     {
-        var movie = m.Format == "MOVIE";
         var title = ChooseTitle(m);
 
         var cast = new List<CastMember>();
@@ -537,7 +538,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 
     // ── ids ───────────────────────────────────────────────────────────────────
 
-    internal sealed record ParsedId(int Id, int? Season, int? Episode, bool Mal);
+    internal sealed record ParsedId(int Id, int? Season, int? Episode, bool Mal, bool Movie = false);
 
     private static readonly Regex IdPattern = new(
         @"^(?:(?:show|movie|anilist):)?(\d+)(?:/season:(\d+))?(?:/episode:(\d+))?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -560,7 +561,8 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             int.Parse(m.Groups[1].Value),
             m.Groups[2].Success ? int.Parse(m.Groups[2].Value) : null,
             m.Groups[3].Success ? int.Parse(m.Groups[3].Value) : null,
-            false);
+            false,
+            value.StartsWith("movie:", StringComparison.OrdinalIgnoreCase));
     }
 
     // ── scoring ───────────────────────────────────────────────────────────────
@@ -583,6 +585,9 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             if (YearOf(candidate) is { } y && Math.Abs(y - year) <= 1) score += 30;
         }
         else score += 10;
+
+        // A regular TV series or feature film beats an OVA or special of the same name.
+        if (candidate.Format is "TV" or "MOVIE") score += 5;
 
         return Math.Min(score, 99);
     }

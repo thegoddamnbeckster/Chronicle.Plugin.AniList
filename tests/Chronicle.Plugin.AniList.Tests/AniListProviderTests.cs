@@ -16,6 +16,11 @@ public class AniListProviderTests
         .Add(new Entry(99147, "Shingeki no Kyojin Season 2 Part 2", "Attack on Titan Season 2 Part 2", Episodes: 6, Year: 2017, Prequel: 25777,
             Streaming: [(1, "Midnight Sun")]))
         .Add(new Entry(20, "Naruto", Episodes: 220, Year: 2002))
+        // AniList lists a 2024 ONA special as the "prequel" of the 1999 series: a loose link that must not be followed.
+        .Add(new Entry(21, "One Piece", "ONE PIECE", Episodes: 1100, Year: 1999, Prequel: 167404, IdMal: 21))
+        .Add(new Entry(167404, "MONSTERS: 103 Mercies Dragon Damnation", Format: "ONA", Year: 2024, Episodes: 1))
+        .Add(new Entry(8986, "Supernatural: The Anime Series", Format: "OVA", Episodes: 22, Year: 2011, Synonyms: ["Supernatural"]))
+        .Add(new Entry(777, "Appleseed", Format: "OVA", Episodes: 1, Year: 1988))
         .Add(new Entry(199, "Sen to Chihiro no Kamikakushi", "Spirited Away", Format: "MOVIE", Year: 2001, IdMal: 199));
 
     private static AniListMetadataProvider Provider(FakeAniList fake) => new(fake.Client());
@@ -76,6 +81,29 @@ public class AniListProviderTests
         var result = await provider.SearchAsync(new MediaSearchContext("Attack on Titan Season 2", MediaTypeName: "anime"));
 
         Assert.Equal("show:16498", result[0].Metadata.ExternalId);
+    }
+
+    [Fact]
+    public async Task ALooseLinkToALaterSpecial_DoesNotMakeTheSeriesIntoThatSpecial()
+    {
+        var provider = Provider(Catalogue());
+
+        var result = await provider.SearchAsync(new MediaSearchContext("One Piece", Year: 1999, MediaTypeName: "anime"));
+
+        Assert.Equal("show:21", result[0].Metadata.ExternalId);
+        Assert.Equal(1999, result[0].Metadata.Year);
+    }
+
+    [Fact]
+    public async Task AnOvaSeries_IsFoundAsAShow_AndAFeatureLengthOva_AsAFilm()
+    {
+        var provider = Provider(Catalogue());
+
+        var show = await provider.SearchAsync(new MediaSearchContext("Supernatural", Year: 2011, MediaTypeName: "anime"));
+        var film = await provider.SearchAsync(new MediaSearchContext("Appleseed", Year: 1988, MediaTypeName: "anime_movies"));
+
+        Assert.Equal("show:8986", show[0].Metadata.ExternalId);
+        Assert.Equal("movie:777", film[0].Metadata.ExternalId);       // stored as a film because the library type is flat
     }
 
     [Fact]

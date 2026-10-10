@@ -12,6 +12,14 @@ public sealed class LiveFactAttribute : FactAttribute
     }
 }
 
+public sealed class LiveTheoryAttribute : TheoryAttribute
+{
+    public LiveTheoryAttribute()
+    {
+        if (Environment.GetEnvironmentVariable("ANILIST_LIVE") != "1") Skip = "Set ANILIST_LIVE=1 to run against the real AniList.";
+    }
+}
+
 public class AniListLiveTests
 {
     private static AniListMetadataProvider Real()
@@ -50,5 +58,33 @@ public class AniListLiveTests
         Assert.Equal("movie:199", found[0].Metadata.ExternalId);
         Assert.NotEmpty(found[0].Metadata.Cast);
         Assert.True(await provider.HealthCheckAsync());
+    }
+
+    [LiveTheory]
+    [InlineData("One Piece", 1999, "anime", "show:21")]
+    [InlineData("Supernatural", 2011, "anime", "show:8986")]
+    [InlineData("Hagane no Renkinjutsushi", 2003, "anime", "show:121")]
+    [InlineData("Evangelion: 1.0 You Are (Not) Alone", 2007, "anime_movies", "movie:2759")]
+    [InlineData("Patlabor: The Movie", 1989, "anime_movies", "movie:1095")]
+    [InlineData("Vampire Hunter D: Bloodlust", 2000, "anime_movies", "movie:543")]
+    public async Task TheLibrarysOwnTitles_AreFound(string name, int year, string type, string expected)
+    {
+        using var provider = Real();
+
+        var found = await provider.SearchAsync(new MediaSearchContext(name, Year: year, MediaTypeName: type));
+
+        Assert.NotEmpty(found);
+        Assert.Equal(expected, found[0].Metadata.ExternalId);
+    }
+
+    [LiveFact]
+    public async Task Appleseed_1988_IsFound_AsAFilm()
+    {
+        using var provider = Real();
+
+        var found = await provider.SearchAsync(new MediaSearchContext("Appleseed", Year: 1988, MediaTypeName: "anime_movies"));
+
+        Assert.NotEmpty(found);
+        Assert.StartsWith("movie:", found[0].Metadata.ExternalId);
     }
 }

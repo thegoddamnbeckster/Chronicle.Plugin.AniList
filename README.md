@@ -7,7 +7,7 @@ Anime metadata plugin for [Chronicle](https://github.com/thegoddamnbeckster/Chro
 Fetches anime metadata — titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings, posters, banners, seasons, and episode titles — from [AniList](https://anilist.co/) via its public GraphQL API.
 
 **Plugin ID:** `chronicle.plugin.anilist`
-**Version:** 1.0.1
+**Version:** 1.0.2
 **Auth:** None (no API key or account required)
 
 ---
@@ -16,10 +16,10 @@ Fetches anime metadata — titles in English, romaji and native, synopses, genre
 
 | Media Type | Shape | Matches | Fields |
 |------------|-------|---------|--------|
-| `anime` | Show / Season / Episode | AniList entries of format TV, TV short and ONA | title, overview, year, poster_url, banner_url, genres, tags, cast (voice actors), crew (staff, animation studio), rating; episodes: title, thumbnail, air date |
-| `anime_movies` | one flat item | AniList entries of format MOVIE | title, overview, year, poster_url, banner_url, runtime, genres, tags, cast, crew, rating |
+| `anime` | Show / Season / Episode | AniList entries of format TV, TV short, ONA and OVA | title, overview, year, poster_url, banner_url, genres, tags, cast (voice actors), crew (staff, animation studio), rating; episodes: title, thumbnail, air date |
+| `anime_movies` | one flat item | AniList entries of format MOVIE, OVA and special (feature-length OVAs are common) | title, overview, year, poster_url, banner_url, runtime, genres, tags, cast, crew, rating |
 
-OVAs, specials and music videos are not matched.
+Music videos are not matched. A regular TV series or feature film is preferred over an OVA or special of the same name.
 
 ---
 
@@ -47,7 +47,7 @@ The MyAnimeList id is published as a cross-reference (`ids.mal`) for other plugi
 AniList has no "series with seasons": every season is its own entry, linked to its neighbours by *prequel* and *sequel* relations. The plugin turns that back into Show / Season / Episode:
 
 - The **show** is the first season's entry. A search that lands on a later season ("Attack on Titan Season 2") is followed back to the first.
-- Each following TV-like **sequel** is the next season. Movies, OVAs and specials in between are skipped.
+- Each following TV-like **sequel** is the next season. Movies, OVAs and specials in between are skipped, and a link to an entry that started *before* its "sequel" (or after its "prequel") is ignored, since AniList's relations are community-maintained and occasionally loose.
 - A sequel whose title says it is a continuation ("Part 2", "2nd Cour", "Final Chapters") is **folded into the season before it**, and episodes keep counting up, so a split season of 12 + 10 episodes is one season of 22.
 
 When your numbering differs from AniList's, use **Fix match** on the season, or rely on another TV provider for episode numbering.
