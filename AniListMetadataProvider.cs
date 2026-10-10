@@ -31,7 +31,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.anilist";
     public string Name     => "AniList";
-    public string Version  => "1.0.3";
+    public string Version  => "1.0.4";
     public string Author   => "Chronicle Contributors";
 
     // Many shows and films are filed on AniList as OVAs or specials (a 1988 feature-length OVA, a 22-episode OVA series), so

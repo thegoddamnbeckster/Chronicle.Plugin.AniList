@@ -53,6 +53,9 @@ internal sealed class FakeAniList : HttpMessageHandler
         {
             var text = vars.GetProperty("q").GetString()!.ToLowerInvariant();
             var formats = vars.GetProperty("formats").EnumerateArray().Select(f => f.GetString()).ToList();
+            // Real AniList returns nothing when "isAdult" is sent as an explicit null.
+            if (vars.TryGetProperty("adult", out var adultVar) && adultVar.ValueKind == JsonValueKind.Null)
+            { data = new { Page = new { media = Array.Empty<object>() } }; return Ok(data); }
             var hits = _entries.Values.Where(e => formats.Contains(e.Format) && (e.Romaji + " " + e.English).ToLowerInvariant().Contains(text)).Select(Media).ToArray();
             data = new { Page = new { media = hits } };
         }

@@ -81,10 +81,14 @@ internal sealed class AniListClient : IDisposable
 
     public async Task<List<AniMedia>> SearchAsync(string text, string[] formats, bool includeAdult, CancellationToken ct)
     {
-        var query = $"query ($q: String, $formats: [MediaFormat], $adult: Boolean) {{ Page(perPage: 10) {{ " +
-                    $"media(search: $q, type: ANIME, format_in: $formats, isAdult: $adult, sort: SEARCH_MATCH) {{ {LightFields} }} }} }}";
-        var data = await QueryAsync<PageEnvelope>(query, new { q = text, formats, adult = includeAdult ? (bool?)null : false }, ct)
-            .ConfigureAwait(false);
+        // "isAdult: null" does not mean "either": AniList then matches nothing at all. To allow adult titles the filter is
+        // left out of the query altogether; to exclude them it is set to false.
+        var query = includeAdult
+            ? $"query ($q: String, $formats: [MediaFormat]) {{ Page(perPage: 10) {{ " +
+              $"media(search: $q, type: ANIME, format_in: $formats, sort: SEARCH_MATCH) {{ {LightFields} }} }} }}"
+            : $"query ($q: String, $formats: [MediaFormat]) {{ Page(perPage: 10) {{ " +
+              $"media(search: $q, type: ANIME, format_in: $formats, isAdult: false, sort: SEARCH_MATCH) {{ {LightFields} }} }} }}";
+        var data = await QueryAsync<PageEnvelope>(query, new { q = text, formats }, ct).ConfigureAwait(false);
         return data?.Page?.Media ?? [];
     }
 

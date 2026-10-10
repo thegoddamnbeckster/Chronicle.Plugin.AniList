@@ -95,6 +95,19 @@ public class AniListProviderTests
     }
 
     [Fact]
+    public async Task WithAdultTitlesAllowed_SearchStillFindsThings()
+    {
+        var provider = Provider(Catalogue());
+        provider.Configure(new Dictionary<string, string> { ["include_adult"] = "true" });
+
+        var film = await provider.SearchAsync(new MediaSearchContext("Spirited Away", Year: 2001, MediaTypeName: "anime_movies"));
+        var show = await provider.SearchAsync(new MediaSearchContext("Naruto", Year: 2002, MediaTypeName: "anime"));
+
+        Assert.Equal("movie:199", film[0].Metadata.ExternalId);
+        Assert.Equal("show:20", show[0].Metadata.ExternalId);
+    }
+
+    [Fact]
     public async Task AnOvaSeries_IsFoundAsAShow_AndAFeatureLengthOva_AsAFilm()
     {
         var provider = Provider(Catalogue());
