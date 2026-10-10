@@ -18,6 +18,8 @@ internal sealed class FakeAniList : HttpMessageHandler
     public int Requests { get; private set; }
     public List<string> Queries { get; } = [];
     public HttpStatusCode? FailWith { get; set; }
+    public int? RetryAfterSeconds { get; set; }
+    public int FailTimes { get; set; } = int.MaxValue;
 
     public FakeAniList Add(Entry e) { _entries[e.Id] = e; return this; }
 
@@ -32,7 +34,12 @@ internal sealed class FakeAniList : HttpMessageHandler
         Queries.Add(query);
         var vars = doc.RootElement.TryGetProperty("variables", out var v) && v.ValueKind == JsonValueKind.Object ? v : default;
 
-        if (FailWith is { } status) return new HttpResponseMessage(status) { Content = Json("{}") };
+        if (FailWith is { } status && FailTimes-- > 0)
+        {
+            var failure = new HttpResponseMessage(status) { Content = Json("{}") };
+            if (RetryAfterSeconds is { } after) failure.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(after));
+            return failure;
+        }
 
         object? data;
         if (query.Contains("airingSchedule"))

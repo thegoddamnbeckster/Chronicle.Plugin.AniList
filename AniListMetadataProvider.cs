@@ -31,7 +31,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.anilist";
     public string Name     => "AniList";
-    public string Version  => "1.0.2";
+    public string Version  => "1.0.3";
     public string Author   => "Chronicle Contributors";
 
     // Many shows and films are filed on AniList as OVAs or specials (a 1988 feature-length OVA, a 22-episode OVA series), so
@@ -152,7 +152,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
         var formats = movie ? MovieFormats : ShowFormats;
         var queries = new List<string> { context.Name };
         if (context.PreciseName is { Length: > 0 } precise && !queries.Contains(precise, StringComparer.OrdinalIgnoreCase)) queries.Add(precise);
-        foreach (var alt in (context.AltTitles ?? []).Take(2))
+        foreach (var alt in (context.AltTitles ?? []).Take(1))   // each extra name costs a request, and AniList allows 30 a minute
             if (!string.IsNullOrWhiteSpace(alt) && !queries.Contains(alt, StringComparer.OrdinalIgnoreCase)) queries.Add(alt);
 
         var scored = new List<(AniMedia Media, int Score)>();

@@ -282,6 +282,37 @@ public class AniListProviderTests
     }
 
     [Fact]
+    public async Task ALongRateLimit_IsReportedAsAnHttp429_NotWaitedOut_SoChronicleLeavesTheItemPending()
+    {
+        var fake = Catalogue();
+        fake.FailWith = System.Net.HttpStatusCode.TooManyRequests;
+        fake.RetryAfterSeconds = 60;
+        var provider = Provider(fake);
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+
+        var error = await Assert.ThrowsAsync<HttpRequestException>(() => provider.GetByIdAsync("16498"));
+
+        Assert.Equal(System.Net.HttpStatusCode.TooManyRequests, error.StatusCode);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5));
+        Assert.Equal(1, fake.Requests);
+    }
+
+    [Fact]
+    public async Task AShortRateLimit_IsWaitedOutOnce()
+    {
+        var fake = Catalogue();
+        fake.FailWith = System.Net.HttpStatusCode.TooManyRequests;
+        fake.RetryAfterSeconds = 0;
+        fake.FailTimes = 1;
+        var provider = Provider(fake);
+
+        var show = await provider.GetByIdAsync("16498");
+
+        Assert.Equal("Attack on Titan", show.Title);
+        Assert.True(fake.Requests >= 2);   // the refused request, then the one that worked
+    }
+
+    [Fact]
     public async Task WalkingASeasonChain_DoesNotAskForTheSameEntryTwice()
     {
         var fake = Catalogue();

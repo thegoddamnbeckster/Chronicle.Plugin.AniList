@@ -7,7 +7,7 @@ Anime metadata plugin for [Chronicle](https://github.com/thegoddamnbeckster/Chro
 Fetches anime metadata — titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings, posters, banners, seasons, and episode titles — from [AniList](https://anilist.co/) via its public GraphQL API.
 
 **Plugin ID:** `chronicle.plugin.anilist`
-**Version:** 1.0.2
+**Version:** 1.0.3
 **Auth:** None (no API key or account required)
 
 ---
@@ -58,7 +58,9 @@ AniList does not have a full episode guide. Episode titles and thumbnails come f
 
 ### Rate limiting
 
-AniList allows 90 requests a minute. Requests are spaced about a second apart, and a 429 answer is waited out using its `Retry-After`. Entries just fetched are remembered for ten minutes while a season chain is walked.
+AniList allows 30 requests a minute (it reports the limit in every answer, and the plugin follows it), so requests are spaced just over two seconds apart. Chronicle gives a plugin 25 seconds per call, so a rate-limit answer is not waited out: a short wait is retried once, anything longer is reported as an HTTP 429, which Chronicle treats as "provider rate limited" and leaves the item **Pending** for the next run, not "not found". Entries just fetched are remembered for ten minutes while a season chain is walked.
+
+A first run over a large anime library is therefore slow by design: expect roughly 6 to 10 seconds per show and 4 to 6 per film.
 
 ---
 
