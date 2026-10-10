@@ -31,7 +31,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.anilist";
     public string Name     => "AniList";
-    public string Version  => "1.0.0";
+    public string Version  => "1.0.1";
     public string Author   => "Chronicle Contributors";
 
     private static readonly string[] ShowFormats  = ["TV", "TV_SHORT", "ONA"];

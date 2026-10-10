@@ -297,6 +297,20 @@ public class AniListProviderTests
     }
 
     [Fact]
+    public void TheManifest_DeclaresTheTwoStandardTasks_AndTheVersionMatchesTheCode()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "manifest.json");
+        if (!File.Exists(path)) path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "manifest.json");
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = doc.RootElement;
+
+        Assert.Equal(new AniListMetadataProvider().Version, root.GetProperty("version").GetString());
+        Assert.Equal(new AniListMetadataProvider().PluginId, root.GetProperty("plugin_id").GetString());
+        var tasks = root.GetProperty("background_tasks").EnumerateArray().Select(t => t.GetProperty("task_id").GetString()).ToList();
+        Assert.Equal(["fetch-missing-metadata", "resync-all-metadata"], tasks);
+    }
+
+    [Fact]
     public async Task NotConfigured_IsAClearError()
     {
         var provider = new AniListMetadataProvider();

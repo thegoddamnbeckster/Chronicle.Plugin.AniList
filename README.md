@@ -7,7 +7,7 @@ Anime metadata plugin for [Chronicle](https://github.com/thegoddamnbeckster/Chro
 Fetches anime metadata — titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings, posters, banners, seasons, and episode titles — from [AniList](https://anilist.co/) via its public GraphQL API.
 
 **Plugin ID:** `chronicle.plugin.anilist`
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Auth:** None (no API key or account required)
 
 ---
@@ -82,7 +82,10 @@ No account or API key is needed.
 
 ## Background Tasks
 
-None. Metadata is fetched by Chronicle's normal enrichment and scan flow.
+| Task | Default schedule | Description |
+|------|------------------|-------------|
+| Fetch Missing Anime Metadata | Daily 04:00, on | Looks up AniList metadata for anime and anime movies not yet enriched by AniList |
+| Re-sync All Anime Metadata | Weekly Sunday 02:00, off | Re-fetches everything to pick up new episodes, season changes, scores and artwork |
 
 ---
 

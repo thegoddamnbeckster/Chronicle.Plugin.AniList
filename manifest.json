@@ -1,7 +1,7 @@
 {
   "plugin_id":   "chronicle.plugin.anilist",
   "name":        "AniList",
-  "version":     "1.0.0",
+  "version":     "1.0.1",
   "author":      "Chronicle Contributors",
   "description": "Anime series, season, episode and film metadata from AniList: titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings and artwork. No API key or account required.",
   "min_chronicle_version": "0.7.0",
@@ -11,6 +11,21 @@
   "brandColorDark":  "#3DB4F2",
   "fixMatchHint": "Enter an AniList ID (16498), an AniList URL (https://anilist.co/anime/16498), a MyAnimeList ID prefixed with mal: (mal:16498), or a MyAnimeList URL.",
   "supported_media_types": ["anime", "anime_movies"],
-  "background_tasks": [],
+  "background_tasks": [
+    {
+      "task_id":         "fetch-missing-metadata",
+      "display_name":    "Fetch Missing Anime Metadata",
+      "description":     "Looks up AniList metadata for anime and anime movies that have not been enriched by AniList yet.",
+      "default_cron":    "0 4 * * *",
+      "default_enabled": true
+    },
+    {
+      "task_id":         "resync-all-metadata",
+      "display_name":    "Re-sync All Anime Metadata",
+      "description":     "Re-fetches all AniList metadata to pick up new episodes, season changes, scores and artwork.",
+      "default_cron":    "0 2 * * 0",
+      "default_enabled": false
+    }
+  ],
   "settings": []
 }

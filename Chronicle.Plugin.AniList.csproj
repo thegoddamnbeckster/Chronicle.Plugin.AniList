@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Chronicle.Plugin.AniList</AssemblyName>
     <RootNamespace>Chronicle.Plugin.AniList</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Chronicle Contributors</Authors>
     <Description>AniList anime metadata plugin for Chronicle. No API key required.</Description>
     <!-- The tests project lives below this folder; keep its sources out of the plugin build. -->
