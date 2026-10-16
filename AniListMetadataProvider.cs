@@ -67,6 +67,10 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             HierarchyLevels = 3,
             HierarchyLabels = ["Show", "Season", "Episode"],
             DefaultPriority = 12,
+            ProviderFamily  = "tv",
+            CastAreActors   = true,
+            ImportShape     = "episodic",
+            Aliases         = ["anime_episode"],
             SupportedFields = ["title", "overview", "year", "poster_url", "banner_url", "genres", "tags", "cast", "crew", "rating"],
             LevelFields = new Dictionary<int, List<string>>
             {
@@ -82,6 +86,8 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
             HierarchyLevels = 1,
             HierarchyLabels = ["Movie"],
             DefaultPriority = 12,
+            ProviderFamily  = "movie",
+            CastAreActors   = true,
             SupportedFields = ["title", "overview", "year", "poster_url", "banner_url", "runtime_minutes", "genres", "tags", "cast", "crew", "rating"],
         },
     ];
