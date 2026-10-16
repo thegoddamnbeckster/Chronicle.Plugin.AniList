@@ -1,7 +1,7 @@
 {
   "plugin_id":   "chronicle.plugin.anilist",
   "name":        "AniList",
-  "version":     "1.0.4",
+  "version":     "1.0.5",
   "author":      "Chronicle Contributors",
   "description": "Anime series, season, episode and film metadata from AniList: titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings and artwork. No API key or account required.",
   "min_chronicle_version": "0.7.0",
