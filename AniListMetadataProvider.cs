@@ -127,7 +127,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
         if (_client is not null && _ownedHttp is null) return;   // a client was supplied directly (tests)
         _client?.Dispose();
         _ownedHttp?.Dispose();
-        _ownedHttp = new HttpClient { DefaultRequestHeaders = { { "User-Agent", "Chronicle/1.0" } } };
+        _ownedHttp = new HttpClient { Timeout = TimeSpan.FromSeconds(20), DefaultRequestHeaders = { { "User-Agent", $"Chronicle-AniList/{Version}" } } };
         _client    = new AniListClient(_ownedHttp, _logger);
         _logger.LogInformation("AniList plugin configured (no API key required)");
     }
