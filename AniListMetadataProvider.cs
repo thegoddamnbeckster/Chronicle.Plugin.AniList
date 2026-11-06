@@ -31,7 +31,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.anilist";
     public string Name     => "AniList";
-    public string Version  => "1.0.4";
+    public string Version  => System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(typeof(AniListMetadataProvider).Assembly)?.InformationalVersion.Split('+')[0] ?? "1.0.5";
     public string Author   => "Chronicle Contributors";
 
     // Many shows and films are filed on AniList as OVAs or specials (a 1988 feature-length OVA, a 22-episode OVA series), so
@@ -257,10 +257,7 @@ public sealed class AniListMetadataProvider : IMetadataProvider, IDisposable
     }
 
     public Task<byte[]> GetImageAsync(string url, CancellationToken ct = default)
-    {
-        EnsureConfigured();
-        return _client!.GetImageBytesAsync(url, ct);
-    }
+        => throw new NotSupportedException("Images are loaded by the browser straight from the address in the metadata; this plugin has nothing to fetch.");
 
     public async Task<bool> HealthCheckAsync(CancellationToken ct = default)
     {
