@@ -306,6 +306,7 @@ public class AniListProviderTests
         var error = await Assert.ThrowsAsync<HttpRequestException>(() => provider.GetByIdAsync("16498"));
 
         Assert.Equal(System.Net.HttpStatusCode.TooManyRequests, error.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(60), error.Data["RetryAfter"]);   // what AniList asked for, so Chronicle's queue holds the item that long
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5));
         Assert.Equal(1, fake.Requests);
     }

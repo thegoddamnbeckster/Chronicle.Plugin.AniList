@@ -137,7 +137,8 @@ internal sealed class AniListClient : IDisposable
                     continue;
                 }
                 throw new HttpRequestException(
-                    $"AniList is rate limiting requests (retry in about {wait.TotalSeconds:0}s)", null, HttpStatusCode.TooManyRequests);
+                    $"AniList is rate limiting requests (retry in about {wait.TotalSeconds:0}s)", null, HttpStatusCode.TooManyRequests)
+                    { Data = { ["RetryAfter"] = wait } };
             }
 
             // A "not found" is reported as HTTP 404 with a GraphQL error; read the body before deciding.
