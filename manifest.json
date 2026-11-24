@@ -1,7 +1,7 @@
 {
   "plugin_id":   "chronicle.plugin.anilist",
   "name":        "AniList",
-  "version":     "1.0.7",
+  "version":     "1.1.0",
   "author":      "Chronicle Contributors",
   "description": "Anime series, season, episode and film metadata from AniList: titles in English, romaji and native, synopses, genres, tags, studios, voice cast, staff, ratings and artwork. No API key or account required.",
   "min_chronicle_version": "0.7.0",
@@ -27,5 +27,14 @@
       "default_enabled": false
     }
   ],
-  "settings": []
+  "settings": [],
+  "rating_sources": [
+    {
+      "key": "anilist",
+      "display_name": "AniList",
+      "stored_scale": 10,
+      "scale": 100,
+      "display": "percent"
+    }
+  ]
 }
